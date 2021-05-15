@@ -1,3 +1,3 @@
 # react-ts-tic-tac-toe
 
-Created with CodeSandbox
+A project to learn **TypeScript** and **React Testing Library** with **Create React App**.
