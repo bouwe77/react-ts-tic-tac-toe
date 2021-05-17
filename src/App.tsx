@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { tw } from 'twind'
 
 const initialTiles = () => Array(9).fill(null)
 
@@ -6,7 +7,7 @@ export default function App() {
   const [tiles, setTiles] = useState(initialTiles)
 
   const gameStatus = determineGameStatus(tiles)
-  const gameOver = ![gameStatuses.X_TURN, gameStatuses.O_TURN].includes(
+  const gameOver = ![GameStatuses.X_TURN, GameStatuses.O_TURN].includes(
     gameStatus,
   )
 
@@ -24,43 +25,73 @@ export default function App() {
   }
 
   return (
-    <div
-      style={{
-        width: '200px',
-        margin: 'auto',
-        textAlign: 'center',
-        border: '1px solid #efefef',
-      }}
-    >
-      <h1>Tic Tac Toe</h1>
+    <div className={tw`h-screen flex items-center justify-center`}>
+      <div className={tw``}>
+        <h1 className={tw`text-6xl font-light text-center text-blue-900`}>
+          Tic Tac Toe
+        </h1>
 
-      <div style={{ height: '30px' }}>{gameStatus}</div>
+        <div className={tw`text-xl font-light text-center text-blue-900`}>
+          {gameStatus}
+        </div>
 
-      <div style={{ width: '150px', margin: 'auto' }}>
-        {tiles.map((tile, index) => (
-          <span key={index}>
+        <div className={tw`flex flex-col`}>
+          <TileRow
+            tiles={tiles.slice(0, 3)}
+            startIndex={0}
+            handleClick={handleClick}
+            disabled={gameOver}
+          />
+          <TileRow
+            tiles={tiles.slice(3, 6)}
+            startIndex={3}
+            handleClick={handleClick}
+            disabled={gameOver}
+          />
+          <TileRow
+            tiles={tiles.slice(6, 9)}
+            startIndex={6}
+            handleClick={handleClick}
+            disabled={gameOver}
+          />
+        </div>
+
+        <div>
+          <button onClick={tryAgain}>{gameOver ? 'Try again' : 'Reset'}</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TileRow({
+  tiles,
+  startIndex,
+  handleClick,
+  disabled,
+}: {
+  tiles: string[]
+  startIndex: number
+  handleClick: (index: number) => void
+  disabled: boolean
+}) {
+  return (
+    <div className={tw`flex flex-row`}>
+      {tiles.map((tile, i) => {
+        let index = i + startIndex
+        return (
+          <div key={index}>
             <button
               aria-label={`button-${index + 1}`}
-              style={{
-                width: '50px',
-                height: '50px',
-                verticalAlign: 'top',
-                fontSize: '30px',
-              }}
+              className={tw`bg-blue-500 border-white rounded border-1 shadow-sm text-2xl font-light w-24 h-24 text-center text-white`}
               onClick={() => handleClick(index)}
-              disabled={gameOver}
+              disabled={disabled}
             >
               {tile}
             </button>
-          </span>
-        ))}
-      </div>
-
-      <div style={{ padding: '20px' }}>
-        <button onClick={tryAgain} style={{ fontSize: '20px', width: '150px' }}>
-          {gameOver ? 'Try again' : 'Reset'}
-        </button>
-      </div>
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -70,12 +101,12 @@ const player = {
   O: 'O',
 }
 
-const gameStatuses = {
-  X_TURN: "Player X's turn",
-  O_TURN: "Player O's turn",
-  X_WON: 'Player X wins!!!',
-  O_WON: 'Player O wins!!!',
-  DRAW: 'Draw...',
+enum GameStatuses {
+  X_TURN = "Player X's turn",
+  O_TURN = "Player O's turn",
+  X_WON = 'Player X wins!!!',
+  O_WON = 'Player O wins!!!',
+  DRAW = 'Draw...',
 }
 
 function determineCurrentPlayer(tiles: string[]) {
@@ -100,14 +131,14 @@ function determineGameStatus(tiles: string[]) {
   for (let combination of combinations) {
     const [x, y, z] = combination
     if (threeInARow(x, y, z))
-      return tiles[x] === player.X ? gameStatuses.X_WON : gameStatuses.O_WON
+      return tiles[x] === player.X ? GameStatuses.X_WON : GameStatuses.O_WON
   }
 
-  if (tiles.every((t) => !!t)) return gameStatuses.DRAW
+  if (tiles.every((t) => !!t)) return GameStatuses.DRAW
 
   return determineCurrentPlayer(tiles) === player.X
-    ? gameStatuses.X_TURN
-    : gameStatuses.O_TURN
+    ? GameStatuses.X_TURN
+    : GameStatuses.O_TURN
 
   function threeInARow(x: number, y: number, z: number) {
     if (!tiles[x] || !tiles[y] || !tiles[z]) return false
