@@ -3,6 +3,14 @@ import { tw } from 'twind'
 
 const initialTiles = () => Array(9).fill(null)
 
+enum GameStatuses {
+  X_TURN = "Player X's turn",
+  O_TURN = "Player O's turn",
+  X_WON = 'Player X wins!!!',
+  O_WON = 'Player O wins!!!',
+  DRAW = 'Draw...',
+}
+
 export default function App() {
   const [tiles, setTiles] = useState(initialTiles)
 
@@ -56,8 +64,10 @@ export default function App() {
           />
         </div>
 
-        <div>
-          <button onClick={tryAgain}>{gameOver ? 'Try again' : 'Reset'}</button>
+        <div className={tw`text-center`}>
+          <button onClick={tryAgain}
+              className={tw`bg-blue-500 border-white rounded border-1 shadow-sm text-2xl font-light w-48 h-12 text-center text-white`}
+              >{gameOver ? 'Try again' : 'Reset'}</button>
         </div>
       </div>
     </div>
@@ -83,7 +93,7 @@ function TileRow({
           <div key={index}>
             <button
               aria-label={`button-${index + 1}`}
-              className={tw`bg-blue-500 border-white rounded border-1 shadow-sm text-2xl font-light w-24 h-24 text-center text-white`}
+              className={disabled ? tw`bg-gray-500 border-white rounded border-1 shadow-sm text-2xl font-light w-24 h-24 text-center text-white cursor-default` : tw`bg-blue-500 border-white rounded border-1 shadow-sm text-2xl font-light w-24 h-24 text-center text-white`}
               onClick={() => handleClick(index)}
               disabled={disabled}
             >
@@ -99,14 +109,6 @@ function TileRow({
 const player = {
   X: 'X',
   O: 'O',
-}
-
-enum GameStatuses {
-  X_TURN = "Player X's turn",
-  O_TURN = "Player O's turn",
-  X_WON = 'Player X wins!!!',
-  O_WON = 'Player O wins!!!',
-  DRAW = 'Draw...',
 }
 
 function determineCurrentPlayer(tiles: string[]) {
