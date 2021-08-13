@@ -35,11 +35,11 @@ export default function App() {
   return (
     <div className={tw`h-screen flex items-center justify-center`}>
       <div className={tw``}>
-        <h1 className={tw`text-6xl font-light text-center text-blue-900`}>
-          Tic Tac Toe
+        <h1 className={tw`text-5xl text-center text-blue-900`}>
+          TIC TAC TOE
         </h1>
 
-        <div className={tw`text-xl font-light text-center text-blue-900`}>
+        <div className={tw`h-16 flex items-center justify-center text-xl font-light`}>
           {gameStatus}
         </div>
 
@@ -64,7 +64,7 @@ export default function App() {
           />
         </div>
 
-        <div className={tw`text-center`}>
+        <div className={tw`h-20 flex items-center justify-center`}>
           <button onClick={tryAgain}
               className={tw`bg-blue-500 border-white rounded border-1 shadow-sm text-2xl font-light w-48 h-12 text-center text-white`}
               >{gameOver ? 'Try again' : 'Reset'}</button>
@@ -93,7 +93,7 @@ function TileRow({
           <div key={index}>
             <button
               aria-label={`button-${index + 1}`}
-              className={disabled ? tw`bg-gray-500 border-white rounded border-1 shadow-sm text-2xl font-light w-24 h-24 text-center text-white cursor-default` : tw`bg-blue-500 border-white rounded border-1 shadow-sm text-2xl font-light w-24 h-24 text-center text-white`}
+              className={disabled ? tw`bg-gray-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default` : tw`bg-blue-500 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white`}
               onClick={() => handleClick(index)}
               disabled={disabled}
             >
