@@ -167,7 +167,7 @@ export default function App() {
           <a href="https://bouwe.io" className={tw`underline`}>
             Bouwe
           </a>{' '}
-          🧔
+          🧔🏻
         </div>
       </div>
     </div>
