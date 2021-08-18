@@ -15,6 +15,7 @@ enum TileValue {
 }
 
 type Tile = {
+  index: number
   value: TileValue
   status: TileStatus
 }
@@ -27,10 +28,53 @@ enum GameStatus {
   DRAW = 'Draw...',
 }
 
-const initialTiles: Array<Tile> = Array(9).fill({
-  value: TileValue.EMPTY,
-  status: TileStatus.AVAILABLE,
-})
+const initialTiles: Array<Tile> = [
+  {
+    index: 0,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 1,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 2,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 3,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 4,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 5,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 6,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 7,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+  {
+    index: 8,
+    value: TileValue.EMPTY,
+    status: TileStatus.AVAILABLE,
+  },
+]
 
 const initialGameStatus = GameStatus.X_TURN
 
@@ -41,11 +85,12 @@ export default function App() {
   const gameStarted = tiles.some((t) => t.value !== TileValue.EMPTY)
   const gameOver = ![GameStatus.X_TURN, GameStatus.O_TURN].includes(gameStatus)
 
-  function handleClick(index: number) {
-    if (gameOver || tiles[index].value !== TileValue.EMPTY) return
+  function handleClick(tile: Tile) {
+    if (gameOver || tile.value !== TileValue.EMPTY) return
 
     let updatedTiles = [...tiles]
-    updatedTiles[index] = {
+    updatedTiles[tile.index] = {
+      ...updatedTiles[tile.index],
       value: determineCurrentPlayer(tiles),
       status: TileStatus.CHOSEN,
     }
@@ -90,46 +135,6 @@ export default function App() {
     setGameStatus(initialGameStatus)
   }
 
-  const buttons = tiles.map((tile, index) => {
-    let button
-    switch (tile.status) {
-      case TileStatus.AVAILABLE:
-        button = (
-          <AvailableButton
-            label={`button-${index}`}
-            onClick={() => handleClick(index)}
-          >
-            {tile.value}
-          </AvailableButton>
-        )
-        break
-      case TileStatus.CHOSEN:
-        button = (
-          <UnavailableButton label={`button-${index}`}>
-            {tile.value}
-          </UnavailableButton>
-        )
-        break
-
-      case TileStatus.DRAW:
-        button = (
-          <DisabledButton label={`button-${index}`}>
-            {tile.value}
-          </DisabledButton>
-        )
-        break
-      case TileStatus.WIN:
-        button = (
-          <WinnerButton label={`button-${index}`}>{tile.value}</WinnerButton>
-        )
-        break
-      default:
-        throw new Error('Unknown tile status: ' + tile.status)
-    }
-
-    return <div key={index}>{button}</div>
-  })
-
   return (
     <div className={tw`h-screen flex items-center justify-center`}>
       <div>
@@ -143,15 +148,27 @@ export default function App() {
 
         <div className={tw`flex flex-col`}>
           <div className={tw`flex flex-row`}>
-            {buttons.slice(0, 3).map((button, i) => button)}
+            {tiles.slice(0, 3).map((tile) => (
+              <div key={tile.index}>
+                <TileButton tile={tile} handleClick={() => handleClick(tile)} />
+              </div>
+            ))}
           </div>
 
           <div className={tw`flex flex-row`}>
-            {buttons.slice(3, 6).map((button, i) => button)}
+            {tiles.slice(3, 6).map((tile) => (
+              <div key={tile.index}>
+                <TileButton tile={tile} handleClick={() => handleClick(tile)} />
+              </div>
+            ))}
           </div>
 
           <div className={tw`flex flex-row`}>
-            {buttons.slice(6, 9).map((button, i) => button)}
+            {tiles.slice(6, 9).map((tile) => (
+              <div key={tile.index}>
+                <TileButton tile={tile} handleClick={() => handleClick(tile)} />
+              </div>
+            ))}
           </div>
         </div>
 
@@ -178,76 +195,41 @@ export default function App() {
   )
 }
 
-function DisabledButton({
-  children,
-  label,
+function TileButton({
+  tile,
+  handleClick,
 }: {
-  children: string
-  label: string
+  tile: Tile
+  handleClick: () => void
 }) {
-  return (
-    <button
-      className={tw`align-top bg-gray-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
-      aria-label={label}
-      disabled={true}
-    >
-      {children}
-    </button>
-  )
-}
+  const isDisabled = tile.status !== TileStatus.AVAILABLE
 
-function AvailableButton({
-  children,
-  label,
-  onClick,
-}: {
-  children: string
-  label: string
-  onClick: () => void
-}) {
-  return (
-    <button
-      className={tw`align-top bg-blue-500 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-blue-500`}
-      aria-label={label}
-      onClick={onClick}
-    >
-      {children}
-    </button>
-  )
-}
+  let bgColor = 'bg-red-300'
+  let cursor = 'cursor-default'
+  switch (tile.status) {
+    case TileStatus.AVAILABLE:
+      bgColor = 'bg-blue-500'
+      cursor = ''
+      break
+    case TileStatus.CHOSEN:
+      bgColor = 'bg-blue-300'
+      break
+    case TileStatus.WIN:
+      bgColor = 'bg-green-300'
+      break
+    case TileStatus.DRAW:
+      bgColor = 'bg-gray-300'
+      break
+  }
 
-function UnavailableButton({
-  children,
-  label,
-}: {
-  children: string
-  label: string
-}) {
   return (
     <button
-      className={tw`align-top bg-blue-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-black cursor-default`}
-      aria-label={label}
-      disabled={true}
+      className={tw`${bgColor} ${cursor} text-white align-top border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center`}
+      aria-label={`button-${tile.index}`}
+      disabled={isDisabled}
+      onClick={isDisabled ? undefined : handleClick}
     >
-      {children}
-    </button>
-  )
-}
-
-function WinnerButton({
-  children,
-  label,
-}: {
-  children: string
-  label: string
-}) {
-  return (
-    <button
-      className={tw`align-top bg-green-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
-      aria-label={label}
-      disabled={true}
-    >
-      {children}
+      {tile.value}
     </button>
   )
 }
