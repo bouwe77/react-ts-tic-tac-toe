@@ -28,53 +28,17 @@ enum GameStatus {
   DRAW = 'Draw...',
 }
 
-const initialTiles: Array<Tile> = [
-  {
-    index: 0,
+const initialTiles: Array<Tile> = Array(9)
+  .fill({
     value: TileValue.EMPTY,
     status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 1,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 2,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 3,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 4,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 5,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 6,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 7,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-  {
-    index: 8,
-    value: TileValue.EMPTY,
-    status: TileStatus.AVAILABLE,
-  },
-]
+  })
+  .map((tile, index) => {
+    return {
+      ...tile,
+      index,
+    }
+  })
 
 const initialGameStatus = GameStatus.X_TURN
 
