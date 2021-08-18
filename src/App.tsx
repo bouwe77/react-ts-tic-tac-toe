@@ -1,9 +1,25 @@
 import { useState } from 'react'
 import { tw } from 'twind'
 
-const initialTiles = () => Array(9).fill(player.EMPTY)
+enum TileStatus {
+  AVAILABLE = 'available',
+  CHOSEN = 'chosen',
+  WIN = 'win',
+  DRAW = 'draw',
+}
 
-enum GameStatuses {
+enum TileValue {
+  X = 'X',
+  O = 'O',
+  EMPTY = '-',
+}
+
+type Tile = {
+  value: TileValue
+  status: TileStatus
+}
+
+enum GameStatus {
   X_TURN = "Player X's turn",
   O_TURN = "Player O's turn",
   X_WON = 'Player X wins!!!',
@@ -11,51 +27,103 @@ enum GameStatuses {
   DRAW = 'Draw...',
 }
 
+const initialTiles: Array<Tile> = Array(9).fill({
+  value: '-',
+  status: TileStatus.AVAILABLE,
+})
+
+const initialGameStatus = GameStatus.X_TURN
+
 export default function App() {
   const [tiles, setTiles] = useState(initialTiles)
+  const [gameStatus, setGameStatus] = useState<GameStatus>(initialGameStatus)
 
-  const gameStatus = determineGameStatus(tiles)
-  const gameStarted = tiles.some((t) => t !== '-')
-  const gameOver = ![GameStatuses.X_TURN, GameStatuses.O_TURN].includes(
-    gameStatus,
-  )
+  const gameStarted = tiles.some((t) => t.value !== TileValue.EMPTY)
+  const gameOver = ![GameStatus.X_TURN, GameStatus.O_TURN].includes(gameStatus)
 
   function handleClick(index: number) {
-    if (gameOver || tiles[index] !== player.EMPTY) return
+    if (gameOver || tiles[index].value !== TileValue.EMPTY) return
 
-    const updatedTiles = [...tiles]
-    updatedTiles[index] = determineCurrentPlayer(tiles)
+    let updatedTiles = [...tiles]
+    updatedTiles[index] = {
+      value: determineCurrentPlayer(tiles),
+      status: TileStatus.CHOSEN,
+    }
+
+    const newGameStatus = determineGameStatus(updatedTiles)
+    setGameStatus(newGameStatus)
+
+    if (newGameStatus === GameStatus.DRAW) {
+      updatedTiles = updatedTiles.map((tile) => {
+        return { ...tile, status: TileStatus.DRAW }
+      })
+    }
+
+    if (
+      newGameStatus === GameStatus.X_WON ||
+      newGameStatus === GameStatus.O_WON
+    ) {
+      const winningIndexes = getThreeInARowIndexes(updatedTiles)
+      updatedTiles[winningIndexes[0]] = {
+        ...updatedTiles[winningIndexes[0]],
+        status: TileStatus.WIN,
+      }
+      updatedTiles[winningIndexes[1]] = {
+        ...updatedTiles[winningIndexes[1]],
+        status: TileStatus.WIN,
+      }
+      updatedTiles[winningIndexes[2]] = {
+        ...updatedTiles[winningIndexes[2]],
+        status: TileStatus.WIN,
+      }
+    }
 
     setTiles(updatedTiles)
   }
 
   function tryAgain() {
     setTiles(initialTiles)
+    setGameStatus(initialGameStatus)
   }
 
   const buttons = tiles.map((tile, index) => {
-    return (
-      <div key={index}>
-        {gameOver ? (
-          <DisabledButton label={`button-${index}`}>{tile}</DisabledButton>
-        ) : tile === player.EMPTY ? (
+    let button
+    switch (tile.status) {
+      case TileStatus.AVAILABLE:
+        button = (
           <AvailableButton
             label={`button-${index}`}
             onClick={() => handleClick(index)}
           >
-            {tile}
+            {tile.value}
           </AvailableButton>
-        ) : (
-          <button
-            aria-label={`button-${index}`}
-            className={tw`bg-blue-500 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white`}
-            onClick={() => handleClick(index)}
-          >
-            {tile}
-          </button>
-        )}
-      </div>
-    )
+        )
+        break
+      case TileStatus.CHOSEN:
+        button = (
+          <UnavailableButton label={`button-${index}`}>
+            {tile.value}
+          </UnavailableButton>
+        )
+        break
+
+      case TileStatus.DRAW:
+        button = (
+          <DisabledButton label={`button-${index}`}>
+            {tile.value}
+          </DisabledButton>
+        )
+        break
+      case TileStatus.WIN:
+        button = (
+          <WinnerButton label={`button-${index}`}>{tile.value}</WinnerButton>
+        )
+        break
+      default:
+        throw new Error('Unknown tile status: ' + tile.status)
+    }
+
+    return <div key={index}>{button}</div>
   })
 
   return (
@@ -144,51 +212,50 @@ function AvailableButton({
   )
 }
 
-// function UnavailableButton({
-//   children,
-//   onClick,
-//   ...rest
-// }: {
-//   children: string
-//   onClick: () => void
-// }) {
-//   return (
-//     <button
-//       className={tw`bg-blue-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
-//       onClick={onClick}
-//       {...rest}
-//     >
-//       {children}
-//     </button>
-//   )
-// }
-
-// function WinnerButton({ children, ...rest }: { children: string }) {
-//   return (
-//     <button
-//       className={tw`bg-green-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
-//       disabled
-//       {...rest}
-//     >
-//       {children}
-//     </button>
-//   )
-// }
-
-const player = {
-  X: 'X',
-  O: 'O',
-  EMPTY: '-',
+function UnavailableButton({
+  children,
+  label,
+}: {
+  children: string
+  label: string
+}) {
+  return (
+    <button
+      className={tw`bg-blue-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-black cursor-default`}
+      aria-label={label}
+      disabled={true}
+    >
+      {children}
+    </button>
+  )
 }
 
-function determineCurrentPlayer(tiles: string[]) {
-  return tiles.filter((t) => t === player.X).length >
-    tiles.filter((t) => t === player.O).length
-    ? player.O
-    : player.X
+function WinnerButton({
+  children,
+  label,
+}: {
+  children: string
+  label: string
+}) {
+  return (
+    <button
+      className={tw`bg-green-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
+      aria-label={label}
+      disabled={true}
+    >
+      {children}
+    </button>
+  )
 }
 
-function determineGameStatus(tiles: string[]) {
+function determineCurrentPlayer(tiles: Array<Tile>) {
+  return tiles.filter((t) => t.value === TileValue.X).length >
+    tiles.filter((t) => t.value === TileValue.O).length
+    ? TileValue.O
+    : TileValue.X
+}
+
+function getThreeInARowIndexes(tiles: Array<Tile>) {
   const combinations = [
     [0, 1, 2],
     [3, 4, 5],
@@ -200,26 +267,39 @@ function determineGameStatus(tiles: string[]) {
     [2, 4, 6],
   ]
 
-  for (let combination of combinations) {
-    const [x, y, z] = combination
-    if (threeInARow(x, y, z))
-      return tiles[x] === player.X ? GameStatuses.X_WON : GameStatuses.O_WON
-  }
-
-  if (tiles.every((t) => t !== player.EMPTY)) return GameStatuses.DRAW
-
-  return determineCurrentPlayer(tiles) === player.X
-    ? GameStatuses.X_TURN
-    : GameStatuses.O_TURN
-
-  function threeInARow(x: number, y: number, z: number) {
+  function isThreeInARow(x: number, y: number, z: number) {
     if (
-      tiles[x] === player.EMPTY ||
-      tiles[y] === player.EMPTY ||
-      tiles[z] === player.EMPTY
+      tiles[x].value === TileValue.EMPTY ||
+      tiles[y].value === TileValue.EMPTY ||
+      tiles[z].value === TileValue.EMPTY
     )
       return false
 
-    return tiles[x] === tiles[y] && tiles[y] === tiles[z]
+    return (
+      tiles[x].value === tiles[y].value && tiles[y].value === tiles[z].value
+    )
   }
+
+  for (let combination of combinations) {
+    const [x, y, z] = combination
+    if (isThreeInARow(x, y, z)) {
+      return combination
+    }
+  }
+  return []
+}
+
+function determineGameStatus(tiles: Array<Tile>) {
+  const threeInARowIndexes = getThreeInARowIndexes(tiles)
+  if (threeInARowIndexes.length > 0) {
+    return tiles[threeInARowIndexes[0]].value === TileValue.X
+      ? GameStatus.X_WON
+      : GameStatus.O_WON
+  }
+
+  if (tiles.every((t) => t.value !== TileValue.EMPTY)) return GameStatus.DRAW
+
+  return determineCurrentPlayer(tiles) === TileValue.X
+    ? GameStatus.X_TURN
+    : GameStatus.O_TURN
 }
