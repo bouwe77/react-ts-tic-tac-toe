@@ -11,7 +11,7 @@ enum TileStatus {
 enum TileValue {
   X = 'X',
   O = 'O',
-  EMPTY = '-',
+  EMPTY = '',
 }
 
 type Tile = {
@@ -28,7 +28,7 @@ enum GameStatus {
 }
 
 const initialTiles: Array<Tile> = Array(9).fill({
-  value: '-',
+  value: TileValue.EMPTY,
   status: TileStatus.AVAILABLE,
 })
 
@@ -53,7 +53,11 @@ export default function App() {
     const newGameStatus = determineGameStatus(updatedTiles)
     setGameStatus(newGameStatus)
 
-    if (newGameStatus === GameStatus.DRAW) {
+    if (
+      newGameStatus === GameStatus.DRAW ||
+      newGameStatus === GameStatus.X_WON ||
+      newGameStatus === GameStatus.O_WON
+    ) {
       updatedTiles = updatedTiles.map((tile) => {
         return { ...tile, status: TileStatus.DRAW }
       })
@@ -183,7 +187,7 @@ function DisabledButton({
 }) {
   return (
     <button
-      className={tw`bg-gray-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
+      className={tw`align-top bg-gray-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
       aria-label={label}
       disabled={true}
     >
@@ -203,7 +207,7 @@ function AvailableButton({
 }) {
   return (
     <button
-      className={tw`bg-blue-500 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-blue-500`}
+      className={tw`align-top bg-blue-500 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-blue-500`}
       aria-label={label}
       onClick={onClick}
     >
@@ -221,7 +225,7 @@ function UnavailableButton({
 }) {
   return (
     <button
-      className={tw`bg-blue-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-black cursor-default`}
+      className={tw`align-top bg-blue-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-black cursor-default`}
       aria-label={label}
       disabled={true}
     >
@@ -239,7 +243,7 @@ function WinnerButton({
 }) {
   return (
     <button
-      className={tw`bg-green-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
+      className={tw`align-top bg-green-300 border-white rounded border-1 shadow-sm text-4xl font-light w-24 h-24 text-center text-white cursor-default`}
       aria-label={label}
       disabled={true}
     >
