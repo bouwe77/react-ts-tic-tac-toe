@@ -169,22 +169,11 @@ function TileButton({
   const isDisabled = tile.status !== TileStatus.AVAILABLE
 
   let bgColor = 'bg-red-300'
-  let cursor = 'cursor-default'
-  switch (tile.status) {
-    case TileStatus.AVAILABLE:
-      bgColor = 'bg-blue-500'
-      cursor = ''
-      break
-    case TileStatus.CHOSEN:
-      bgColor = 'bg-blue-300'
-      break
-    case TileStatus.WIN:
-      bgColor = 'bg-green-300'
-      break
-    case TileStatus.DRAW:
-      bgColor = 'bg-gray-300'
-      break
-  }
+  if (tile.status === TileStatus.AVAILABLE) bgColor = 'bg-blue-500'
+  if (tile.status === TileStatus.CHOSEN) bgColor = 'bg-blue-300'
+  if (tile.status === TileStatus.WIN) bgColor = 'bg-green-300'
+  if (tile.status === TileStatus.DRAW) bgColor = 'bg-gray-300'
+  let cursor = tile.status === TileStatus.AVAILABLE ? '' : 'cursor-default'
 
   return (
     <button
